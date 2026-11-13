@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetCalc Pro — Kalkulator IPv4 & Subnetting Modern</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e32',
+                            925: '#0b1120',
+                            950: '#060a14',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Kustomisasi scrollbar halus */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.3);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.5);
+        }
+        /* Animasi transisi halus */
+        .bit-pill {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-300 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Toast Notification (Pengganti alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-30 backdrop-blur-md bg-white/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-lg tracking-tight text-slate-900 dark:text-white">NetCalc<span class="text-indigo-500">Pro</span></h1>
+                        <span class="text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">IPv4 Engine</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Kalkulator Jaringan, Analisis Bit & Perencana Subnet</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Tombol Share URL -->
+                <button onclick="copyShareLink()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 transition" title="Salin tautan konfigurasi ini">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    <span class="hidden sm:inline">Bagikan</span>
+                </button>
+
+                <!-- Tombol Dark/Light Mode -->
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 transition" aria-label="Ganti Tema">
+                    <!-- Sun Icon -->
+                    <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 hidden dark:block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <!-- Moon Icon -->
+                    <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 block dark:hidden text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+        <!-- Section 1: Panel Input & Preset Cepat -->
+        <section class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-5 sm:p-6">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 mb-5 border-b border-slate-100 dark:border-slate-800/80">
+                <div>
+                    <h2 class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Konfigurasi Alamat IP & Subnet
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Masukkan IPv4 beserta netmask CIDR atau desimal. Anda juga dapat langsung menempel format <code class="font-mono text-indigo-500">IP/CIDR</code>.</p>
+                </div>
+
+                <!-- Preset Cepat -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-xs font-medium text-slate-400 mr-1">Preset:</span>
+                    <button type="button" onclick="applyPreset('192.168.1.1', '24', '')" class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-500/20 dark:text-slate-300 dark:hover:text-indigo-300 border border-slate-200/70 dark:border-slate-700 transition">
+                        192.168.1.1/24
+                    </button>
+                    <button type="button" onclick="applyPreset('10.0.0.1', '8', '')" class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-500/20 dark:text-slate-300 dark:hover:text-indigo-300 border border-slate-200/70 dark:border-slate-700 transition">
+                        10.0.0.1/8
+                    </button>
+                    <button type="button" onclick="applyPreset('172.16.0.1', '16', '')" class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-500/20 dark:text-slate-300 dark:hover:text-indigo-300 border border-slate-200/70 dark:border-slate-700 transition">
+                        172.16.0.1/16
+                    </button>
+                    <button type="button" onclick="applyPreset('192.168.10.0', '24', '27')" class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 transition" title="Contoh Subnetting /24 ke /27">
+                        Subnet /24 → /27
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Grid -->
+            <form id="ip-form" onsubmit="event.preventDefault(); calculate();" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <!-- Input IP Address -->
+                <div class="md:col-span-4">
+                    <label for="ip-input" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                        Alamat IP (Host / Network)
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="ip-input" value="192.168.1.1" placeholder="Contoh: 192.168.1.1 atau 192.168.1.1/24"
+                            class="w-full font-mono text-sm sm:text-base px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                </div>
+
+                <!-- Input Netmask Utama -->
+                <div class="md:col-span-4">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="mask-input" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Netmask / CIDR
+                        </label>
+                        <select id="mask-dropdown" onchange="document.getElementById('mask-input').value = this.value; calculate();"
+                            class="text-[11px] font-mono bg-transparent text-indigo-600 dark:text-indigo-400 focus:outline-none cursor-pointer">
+                            <option value="">Pilih Cepat...</option>
+                        </select>
+                    </div>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 font-mono text-slate-400 select-none">/</span>
+                        <input type="text" id="mask-input" value="24" placeholder="24 atau 255.255.255.0"
+                            class="w-full font-mono text-sm sm:text-base pl-7 pr-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                </div>
+
+                <!-- Input Move To / Subnet Kedua (Opsional) -->
+                <div class="md:col-span-4">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="submask-input" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Move To / Subnet Mask Baru <span class="text-[10px] font-normal lowercase text-slate-400">(opsional)</span>
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <select id="submask-dropdown" onchange="document.getElementById('submask-input').value = this.value; calculate();"
+                                class="text-[11px] font-mono bg-transparent text-emerald-600 dark:text-emerald-400 focus:outline-none cursor-pointer">
+                                <option value="">Pilih...</option>
+                            </select>
+                            <button type="button" onclick="document.getElementById('submask-input').value=''; calculate();" class="text-[11px] text-rose-500 hover:underline">Reset</button>
+                        </div>
+                    </div>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 font-mono text-slate-400 select-none">→</span>
+                        <input type="text" id="submask-input" value="" placeholder="Kosongkan atau isi misal: 27"
+                            class="w-full font-mono text-sm sm:text-base pl-8 pr-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
+                    </div>
+                </div>
+            </form>
+
+            <!-- Pesan Error Validasi -->
+            <div id="error-banner" class="hidden mt-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs sm:text-sm flex items-center gap-2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="error-message" class="font-medium">Format IP Address tidak valid.</span>
+            </div>
+        </section>
+
+        <!-- Container Hasil Kalkulasi (Disembunyikan jika input error) -->
+        <div id="results-wrapper" class="space-y-6">
+
+            <!-- Section 2: Ringkasan Kartu Metrik & Visualisasi Bit -->
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <!-- Kartu Info Ringkas (4 Kartu) -->
+                <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <!-- Total Host -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Host Tersedia</span>
+                        <div class="mt-2">
+                            <div id="stat-hosts" class="font-mono text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400 truncate">254</div>
+                            <div id="stat-total-ip" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Total 256 IP</div>
+                        </div>
+                    </div>
+
+                    <!-- Kelas & Tipe IP -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Kelas & Status</span>
+                        <div class="mt-2">
+                            <div id="stat-class" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Class C</div>
+                            <div id="stat-scope" class="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Private Network</div>
+                        </div>
+                    </div>
+
+                    <!-- Network CIDR -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Network ID</span>
+                        <div class="mt-2">
+                            <div id="stat-network" class="font-mono text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">192.168.1.0/24</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Alamat Jaringan</div>
+                        </div>
+                    </div>
+
+                    <!-- Mode / Subnets -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Struktur Bit</span>
+                        <div class="mt-2">
+                            <div id="stat-bits-ratio" class="font-mono text-sm sm:text-base font-bold text-emerald-600 dark:text-emerald-400">24N : 8H</div>
+                            <div id="stat-mode-label" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Standar CIDR</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualisasi Bar Proporsi Bit (32-bit) -->
+                <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Alokasi 32-Bit IPv4</span>
+                        <span id="bit-bar-summary" class="font-mono text-xs text-slate-500 dark:text-slate-400">32 bits total</span>
+                    </div>
+
+                    <!-- Bar Visual -->
+                    <div class="w-full h-5 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden flex p-0.5 gap-0.5 border border-slate-200/60 dark:border-slate-700/60">
+                        <div id="bar-network" style="width: 75%" class="h-full bg-indigo-500 rounded-l-lg transition-all duration-300 flex items-center justify-center text-[10px] font-mono font-bold text-white overflow-hidden">24</div>
+                        <div id="bar-subnet" style="width: 0%" class="h-full bg-amber-500 transition-all duration-300 flex items-center justify-center text-[10px] font-mono font-bold text-white overflow-hidden"></div>
+                        <div id="bar-host" style="width: 25%" class="h-full bg-emerald-500 rounded-r-lg transition-all duration-300 flex items-center justify-center text-[10px] font-mono font-bold text-white overflow-hidden">8</div>
+                    </div>
+
+                    <!-- Legenda Warna Bit -->
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] text-slate-600 dark:text-slate-400">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-indigo-500"></span>
+                            <span>Network Bits (<strong id="legend-net-count" class="font-mono">24</strong>)</span>
+                        </div>
+                        <div id="legend-sub-wrapper" class="hidden items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
+                            <span>Subnet Bits (<strong id="legend-sub-count" class="font-mono">0</strong>)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span>
+                            <span>Host Bits (<strong id="legend-host-count" class="font-mono">8</strong>)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Tabel Utama Hasil Kalkulasi (Ala jodies.de dengan tampilan modern) -->
+            <section class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Detail Parameter Jaringan</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Representasi Desimal, Biner (dengan pewarnaan bit), dan Heksadesimal</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="copyAllSummary()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            Salin Semua Hasil
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50/80 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                <th class="py-3 px-4 sm:px-5 w-40">Parameter</th>
+                                <th class="py-3 px-4">Desimal (Dotted)</th>
+                                <th class="py-3 px-4">Biner (32-Bit per Oktet)</th>
+                                <th class="py-3 px-4 hidden xl:table-cell">Heksadesimal</th>
+                                <th class="py-3 px-4 text-right w-24">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="main-calc-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/70 text-xs sm:text-sm">
+                            <!-- Diisi secara dinamis oleh JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 4: Hasil Subnetting / Supernetting ("Move to:") -->
+            <section id="subnetting-section" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                <!-- Header Bagian Subnetting -->
+                <div class="px-5 py-4 bg-gradient-to-r from-indigo-500/5 via-transparent to-emerald-500/5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="transition-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                Subnetting
+                            </span>
+                            <h3 id="transition-title" class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                                Transisi Jaringan (/24 → /27)
+                            </h3>
+                        </div>
+                        <p id="transition-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Memecah jaringan menjadi 8 subnet yang lebih kecil, masing-masing dengan 30 host aktif.
+                        </p>
+                    </div>
+
+                    <!-- Statistik Singkat Transisi -->
+                    <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-200/70 dark:border-slate-800">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total Subnet</div>
+                            <div id="trans-subnet-count" class="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400">8</div>
+                        </div>
+                        <div class="w-px h-7 bg-slate-200 dark:bg-slate-800"></div>
+                        <div>
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Host / Subnet</div>
+                            <div id="trans-host-per-sub" class="font-mono text-base font-bold text-indigo-600 dark:text-indigo-400">30</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabel Parameter Mask Baru (Untuk Subnetting maupun Supernetting) -->
+                <div class="border-b border-slate-200/80 dark:border-slate-800">
+                    <div class="px-5 py-2.5 bg-slate-50/60 dark:bg-slate-950/40 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                        Parameter Mask Target (<span id="target-mask-label" class="font-mono text-emerald-500">/27</span>)
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <tbody id="target-mask-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/70 text-xs sm:text-sm">
+                                <!-- Diisi secara dinamis oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Daftar Subnet yang Dihasilkan (Khusus Subnetting) -->
+                <div id="subnets-list-container" class="p-5 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Daftar Sub-Jaringan (Subnets)</h4>
+                            <p id="subnets-limit-note" class="text-xs text-slate-500 dark:text-slate-400">Menampilkan semua subnet yang terbentuk.</p>
+                        </div>
+
+                        <!-- Kontrol Pagination / Pencarian Subnet -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="text" id="subnet-search" oninput="renderSubnetPage()" placeholder="Cari IP atau nomor subnet..."
+                                class="font-mono text-xs px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48 sm:w-56">
+                            
+                            <button type="button" onclick="exportSubnetsCSV()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Unduh CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Daftar Subnet -->
+                    <div class="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                    <th class="py-2.5 px-3.5 w-16">#</th>
+                                    <th class="py-2.5 px-3.5">Network Address</th>
+                                    <th class="py-2.5 px-3.5">Rentang Host (HostMin — HostMax)</th>
+                                    <th class="py-2.5 px-3.5">Broadcast</th>
+                                    <th class="py-2.5 px-3.5 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subnets-list-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/70 font-mono text-xs">
+                                <!-- Diisi JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Navigasi Halaman Subnet -->
+                    <div id="subnet-pagination" class="flex items-center justify-between pt-1 text-xs text-slate-500 dark:text-slate-400">
+                        <span id="page-info">Menampilkan 1 - 8 dari 8 subnet</span>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="btn-prev-page" onclick="changeSubnetPage(-1)" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none font-medium text-slate-700 dark:text-slate-300 transition">
+                                ← Sebelumnya
+                            </button>
+                            <button type="button" id="btn-next-page" onclick="changeSubnetPage(1)" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none font-medium text-slate-700 dark:text-slate-300 transition">
+                                Berikutnya →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mt-8 border-t border-slate-200/70 dark:border-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div>
+            <strong class="text-slate-700 dark:text-slate-300">NetCalc Pro</strong> — Perhitungan presisi bitwise 32-bit unsigned IPv4.
+        </div>
+        <div class="flex items-center gap-4">
+            <span>Mendukung CIDR /0 – /32</span>
+            <span>•</span>
+            <span>RFC 1918, RFC 3021 (/31), RFC 6598</span>
+        </div>
+    </footer>
+
+    <!-- Logika JavaScript Lengkap -->
+    <script>
+        // =========================================================================
+        // 1. STATE GLOBAL & INISIALISASI UI
+        // =========================================================================
+        let currentResult = null;
+        let allSubnetsCache = [];
+        let filteredSubnets = [];
+        let currentPage = 1;
+        const PAGE_SIZE = 32;
+        const MAX_SUBNETS_GENERATE = 4096; // Batas aman generasi otomatis di memori agar browser tetap kilat
+
+        // Inisialisasi Dropdown CIDR (/0 sampai /32)
+        function initDropdowns() {
+            const maskSelect = document.getElementById('mask-dropdown');
+            const subSelect = document.getElementById('submask-dropdown');
+            
+            for (let cidr = 1; cidr <= 32; cidr++) {
+                const maskInt = cidrToInt(cidr);
+                const maskStr = intToIp(maskInt);
+                const label = `/${cidr} (${maskStr})`;
+                
+                const opt1 = new Option(label, cidr.toString());
+                const opt2 = new Option(label, cidr.toString());
+                maskSelect.add(opt1);
+                subSelect.add(opt2);
+            }
+        }
+
+        // Pengaturan Tema (Dark / Light)
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        themeToggleBtn.addEventListener('click', () => {
+            const htmlEl = document.documentElement;
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('netcalc-theme', 'light');
+            } else {
+                htmlEl.classList.add('dark');
+                localStorage.setItem('netcalc-theme', 'dark');
+            }
+        });
+
+        // Muat preferensi tema tersimpan
+        if (localStorage.getItem('netcalc-theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // =========================================================================
+        // 2. UTILITAS BITWISE IPv4 (UNSIGNED 32-BIT)
+        // =========================================================================
+
+        /**
+         * Mengubah string IPv4 (misal "192.168.1.1") menjadi integer unsigned 32-bit.
+         * Mengembalikan null jika format tidak valid.
+         */
+        function ipToInt(ipStr) {
+            if (!ipStr || typeof ipStr !== 'string') return null;
+            const trimmed = ipStr.trim();
+            const parts = trimmed.split('.');
+            if (parts.length !== 4) return null;
+
+            let result = 0;
+            for (let i = 0; i < 4; i++) {
+                // Pastikan hanya digit angka dan tidak ada spasi/karakter aneh
+                if (!/^\d{1,3}$/.test(parts[i])) return null;
+                const octet = parseInt(parts[i], 10);
+                if (octet < 0 || octet > 255) return null;
+                result = ((result << 8) | octet) >>> 0;
+            }
+            return result >>> 0;
+        }
+
+        /**
+         * Mengubah integer unsigned 32-bit menjadi string IPv4 desimal.
+         */
+        function intToIp(intVal) {
+            const u = intVal >>> 0;
+            return [
+                (u >>> 24) & 255,
+                (u >>> 16) & 255,
+                (u >>> 8) & 255,
+                u & 255
+            ].join('.');
+        }
+
+        /**
+         * Mengubah integer unsigned 32-bit menjadi representasi Heksadesimal per oktet (misal C0.A8.01.01).
+         */
+        function intToHex(intVal) {
+            const u = intVal >>> 0;
+            return [
+                ((u >>> 24) & 255).toString(16).toUpperCase().padStart(2, '0'),
+                ((u >>> 16) & 255).toString(16).toUpperCase().padStart(2, '0'),
+                ((u >>> 8) & 255).toString(16).toUpperCase().padStart(2, '0'),
+                (u & 255).toString(16).toUpperCase().padStart(2, '0')
+            ].join('.');
+        }
+
+        /**
+         * Mengubah prefix CIDR (0-32) menjadi integer unsigned 32-bit netmask.
+         */
+        function cidrToInt(cidr) {
+            if (cidr === 0) return 0;
+            return (0xFFFFFFFF << (32 - cidr)) >>> 0;
+        }
+
+        /**
+         * Mem-parsing input Netmask baik berupa CIDR ("24" atau "/24") maupun Desimal ("255.255.255.0").
+         * Mengembalikan angka CIDR (0..32) atau null jika tidak valid / tidak contiguous.
+         */
+        function parseNetmask(maskStr) {
+            if (!maskStr || typeof maskStr !== 'string') return null;
+            let clean = maskStr.trim();
+            if (clean.startsWith('/')) {
+                clean = clean.substring(1).trim();
+            }
+
+            // Cek jika format angka CIDR murni (0 - 32)
+            if (/^\d{1,2}$/.test(clean)) {
+                const cidr = parseInt(clean, 10);
+                if (cidr >= 0 && cidr <= 32) return cidr;
+                return null;
+            }
+
+            // Cek jika format dotted decimal (misal 255.255.255.0)
+            const maskInt = ipToInt(clean);
+            if (maskInt === null) return null;
+
+            // Validasi bahwa bit 1 berurutan dari kiri ke kanan (contiguous mask)
+            if (maskInt === 0) return 0;
+            const inverted = (~maskInt) >>> 0;
+            // Jika inverted + 1 adalah pangkat 2, maka bit 1 contiguous
+            if (((inverted + 1) & inverted) === 0) {
+                // Hitung jumlah bit 1
+                let cidr = 0;
+                let temp = maskInt;
+                while (temp !== 0) {
+                    cidr++;
+                    temp = (temp << 1) >>> 0;
+                }
+                return cidr;
+            }
+
+            return null; // Netmask tidak contiguous (seperti 255.0.255.0)
+        }
+
+        /**
+         * Menentukan Kelas IPv4 (A, B, C, D, E) dan Status Jaringan (Private, Public, Loopback, CGNAT, dll).
+         */
+        function getIpMetadata(ipInt) {
+            const firstOctet = (ipInt >>> 24) & 255;
+            const secondOctet = (ipInt >>> 16) & 255;
+
+            let ipClass = 'Class A';
+            if (firstOctet >= 1 && firstOctet <= 126) ipClass = 'Class A';
+            else if (firstOctet === 127) ipClass = 'Class A (Loopback)';
+            else if (firstOctet >= 128 && firstOctet <= 191) ipClass = 'Class B';
+            else if (firstOctet >= 192 && firstOctet <= 223) ipClass = 'Class C';
+            else if (firstOctet >= 224 && firstOctet <= 239) ipClass = 'Class D (Multicast)';
+            else if (firstOctet >= 240) ipClass = 'Class E (Eksperimental)';
+            else if (firstOctet === 0) ipClass = 'This Network (0/8)';
+
+            let scope = 'Public Internet';
+            let badgeStyle = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20';
+
+            if (firstOctet === 10) {
+                scope = 'Private (RFC 1918)';
+                badgeStyle = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+            } else if (firstOctet === 172 && (secondOctet >= 16 && secondOctet <= 31)) {
+                scope = 'Private (RFC 1918)';
+                badgeStyle = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+            } else if (firstOctet === 192 && secondOctet === 168) {
+                scope = 'Private (RFC 1918)';
+                badgeStyle = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+            } else if (firstOctet === 127) {
+                scope = 'Loopback (RFC 1122)';
+                badgeStyle = 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
+            } else if (firstOctet === 169 && secondOctet === 254) {
+                scope = 'Link-Local / APIPA';
+                badgeStyle = 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20';
+            } else if (firstOctet === 100 && (secondOctet >= 64 && secondOctet <= 127)) {
+                scope = 'Carrier-Grade NAT';
+                badgeStyle = 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20';
+            } else if (firstOctet >= 224 && firstOctet <= 239) {
+                scope = 'Multicast (RFC 5771)';
+                badgeStyle = 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20';
+            } else if (firstOctet >= 240) {
+                scope = 'Reserved / Future';
+                badgeStyle = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
+            } else if (firstOctet === 0) {
+                scope = 'Current Network';
+                badgeStyle = 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
+            }
+
+            return { ipClass, scope, badgeStyle };
+        }
+
+        /**
+         * Menghasilkan HTML string 32-bit biner per oktet dengan pewarnaan:
+         * - Bit 0 .. netBits-1 : Warna Indigo (Network Bits)
+         * - Bit netBits .. subBits-1 : Warna Amber (Subnet Bits, jika subnetting aktif)
+         * - Sisanya : Warna Emerald (Host Bits)
+         */
+        function formatColoredBinary(intVal, netBits, targetBits = null) {
+            const u = intVal >>> 0;
+            const binStr = u.toString(2).padStart(32, '0');
+            
+            const effectiveSubEnd = (targetBits !== null && targetBits > netBits) ? targetBits : netBits;
+            const effectiveNetEnd = (targetBits !== null && targetBits < netBits) ? targetBits : netBits;
+
+            let html = '<span class="font-mono tracking-tight inline-flex flex-wrap items-center">';
+            for (let octetIdx = 0; octetIdx < 4; octetIdx++) {
+                html += '<span class="inline-flex">';
+                for (let bitInOctet = 0; bitInOctet < 8; bitInOctet++) {
+                    const globalBitIdx = octetIdx * 8 + bitInOctet;
+                    const bitChar = binStr[globalBitIdx];
+
+                    let colorClass = '';
+                    if (globalBitIdx < effectiveNetEnd) {
+                        // Network Bits
+                        colorClass = 'text-indigo-600 dark:text-indigo-400 font-semibold';
+                    } else if (globalBitIdx < effectiveSubEnd) {
+                        // Subnet Bits (atau supernet borrowed bits)
+                        colorClass = 'text-amber-600 dark:text-amber-400 font-bold underline decoration-amber-500/50 underline-offset-2';
+                    } else {
+                        // Host Bits
+                        colorClass = 'text-emerald-600 dark:text-emerald-400';
+                    }
+
+                    html += `<span class="${colorClass}">${bitChar}</span>`;
+                }
+                html += '</span>';
+                if (octetIdx < 3) {
+                    html += '<span class="text-slate-400 dark:text-slate-600 mx-0.5 font-normal">.</span>';
+                }
+            }
+            html += '</span>';
+            return html;
+        }
+
+        /**
+         * Menghitung seluruh properti jaringan untuk pasangan (ipInt, cidr)
+         */
+        function computeNetworkBlock(ipInt, cidr) {
+            const maskInt = cidrToInt(cidr);
+            const wildcardInt = (~maskInt) >>> 0;
+            const networkInt = (ipInt & maskInt) >>> 0;
+            const broadcastInt = (networkInt | wildcardInt) >>> 0;
+
+            let hostMinInt, hostMaxInt, usableHosts;
+            const totalAddresses = Math.pow(2, 32 - cidr);
+
+            if (cidr === 32) {
+                hostMinInt = networkInt;
+                hostMaxInt = networkInt;
+                usableHosts = 1;
+            } else if (cidr === 31) {
+                // RFC 3021 Point-to-Point link
+                hostMinInt = networkInt;
+                hostMaxInt = broadcastInt;
+                usableHosts = 2;
+            } else {
+                hostMinInt = (networkInt + 1) >>> 0;
+                hostMaxInt = (broadcastInt - 1) >>> 0;
+                usableHosts = Math.max(0, totalAddresses - 2);
+            }
+
+            return {
+                ipInt,
+                cidr,
+                maskInt,
+                wildcardInt,
+                networkInt,
+                broadcastInt,
+                hostMinInt,
+                hostMaxInt,
+                usableHosts,
+                totalAddresses,
+                ipStr: intToIp(ipInt),
+                maskStr: intToIp(maskInt),
+                wildcardStr: intToIp(wildcardInt),
+                networkStr: intToIp(networkInt),
+                broadcastStr: intToIp(broadcastInt),
+                hostMinStr: intToIp(hostMinInt),
+                hostMaxStr: intToIp(hostMaxInt)
+            };
+        }
+
+        // =========================================================================
+        // 3. FUNGSI UTAMA KALKULASI & RENDER UI
+        // =========================================================================
+
+        function calculate() {
+            const ipInputEl = document.getElementById('ip-input');
+            const maskInputEl = document.getElementById('mask-input');
+            const submaskInputEl = document.getElementById('submask-input');
+
+            let rawIp = ipInputEl.value.trim();
+            let rawMask = maskInputEl.value.trim();
+            let rawSubmask = submaskInputEl.value.trim();
+
+            // Fitur pintar: Jika pengguna menempel "192.168.1.50/26" langsung di kolom IP
+            if (rawIp.includes('/')) {
+                const splitParts = rawIp.split('/');
+                if (splitParts.length === 2 && splitParts[1].trim() !== '') {
+                    rawIp = splitParts[0].trim();
+                    rawMask = splitParts[1].trim();
+                    ipInputEl.value = rawIp;
+                    maskInputEl.value = rawMask;
+                }
+            }
+
+            // Validasi IP
+            const ipInt = ipToInt(rawIp);
+            if (ipInt === null) {
+                showError('Alamat IPv4 tidak valid. Pastikan terdiri dari 4 oktet bernilai 0–255 (contoh: 192.168.1.1).');
+                return;
+            }
+
+            // Validasi Netmask Utama
+            const cidr = parseNetmask(rawMask);
+            if (cidr === null) {
+                showError('Netmask atau CIDR utama tidak valid. Gunakan angka 0–32 (contoh: 24) atau mask desimal yang valid (contoh: 255.255.255.0).');
+                return;
+            }
+
+            // Validasi Submask Kedua (Opsional)
+            let targetCidr = null;
+            if (rawSubmask !== '') {
+                targetCidr = parseNetmask(rawSubmask);
+                if (targetCidr === null) {
+                    showError('Subnet mask kedua ("Move To") tidak valid. Gunakan CIDR (0–32) atau format desimal yang sah.');
+                    return;
+                }
+            }
+
+            hideError();
+
+            // Hitung Blok Utama
+            const primary = computeNetworkBlock(ipInt, cidr);
+            const meta = getIpMetadata(ipInt);
+            currentResult = { primary, targetCidr, meta };
+
+            // Render Metrik Atas & Visual Bar
+            renderOverviewCards(primary, targetCidr, meta);
+
+            // Render Tabel Parameter Utama
+            renderMainTable(primary, targetCidr);
+
+            // Render Bagian Subnetting / Supernetting jika targetCidr diisi dan berbeda dari cidr utama
+            if (targetCidr !== null && targetCidr !== cidr) {
+                renderTransitionSection(primary, targetCidr);
+            } else {
+                document.getElementById('subnetting-section').classList.add('hidden');
+            }
+
+            // Perbarui parameter URL tanpa reload halaman
+            updateUrlState(rawIp, cidr, targetCidr);
+        }
+
+        function renderOverviewCards(primary, targetCidr, meta) {
+            document.getElementById('stat-hosts').textContent = primary.usableHosts.toLocaleString('id-ID');
+            document.getElementById('stat-total-ip').textContent = primary.cidr === 31
+                ? '2 IP (RFC 3021 P2P)'
+                : `Total ${primary.totalAddresses.toLocaleString('id-ID')} IP`;
+
+            document.getElementById('stat-class').textContent = meta.ipClass;
+            const scopeEl = document.getElementById('stat-scope');
+            scopeEl.textContent = meta.scope;
+            scopeEl.className = `inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${meta.badgeStyle}`;
+
+            document.getElementById('stat-network').textContent = `${primary.networkStr}/${primary.cidr}`;
+
+            // Struktur Bit & Bar Visualisasi
+            const barNet = document.getElementById('bar-network');
+            const barSub = document.getElementById('bar-subnet');
+            const barHost = document.getElementById('bar-host');
+            const legendSubWrap = document.getElementById('legend-sub-wrapper');
+
+            if (targetCidr !== null && targetCidr > primary.cidr) {
+                // Mode Subnetting
+                const netBits = primary.cidr;
+                const subBits = targetCidr - primary.cidr;
+                const hostBits = 32 - targetCidr;
+
+                document.getElementById('stat-bits-ratio').textContent = `${netBits}N : ${subBits}S : ${hostBits}H`;
+                document.getElementById('stat-mode-label').textContent = `Subnetting (+${subBits} bit)`;
+
+                barNet.style.width = `${(netBits / 32) * 100}%`;
+                barNet.textContent = netBits >= 3 ? `${netBits}` : '';
+
+                barSub.style.width = `${(subBits / 32) * 100}%`;
+                barSub.textContent = subBits >= 2 ? `+${subBits}` : '';
+
+                barHost.style.width = `${(hostBits / 32) * 100}%`;
+                barHost.textContent = hostBits >= 3 ? `${hostBits}` : '';
+
+                document.getElementById('legend-net-count').textContent = netBits;
+                document.getElementById('legend-sub-count').textContent = subBits;
+                document.getElementById('legend-host-count').textContent = hostBits;
+                legendSubWrap.classList.remove('hidden');
+                legendSubWrap.classList.add('flex');
+            } else if (targetCidr !== null && targetCidr < primary.cidr) {
+                // Mode Supernetting
+                const netBits = targetCidr;
+                const hostBits = 32 - targetCidr;
+
+                document.getElementById('stat-bits-ratio').textContent = `${netBits}N : ${hostBits}H`;
+                document.getElementById('stat-mode-label').textContent = `Supernetting (-${primary.cidr - targetCidr} bit)`;
+
+                barNet.style.width = `${(netBits / 32) * 100}%`;
+                barNet.textContent = netBits >= 3 ? `${netBits}` : '';
+
+                barSub.style.width = '0%';
+                barSub.textContent = '';
+
+                barHost.style.width = `${(hostBits / 32) * 100}%`;
+                barHost.textContent = hostBits >= 3 ? `${hostBits}` : '';
+
+                document.getElementById('legend-net-count').textContent = netBits;
+                document.getElementById('legend-host-count').textContent = hostBits;
+                legendSubWrap.classList.add('hidden');
+                legendSubWrap.classList.remove('flex');
+            } else {
+                // Mode Standar
+                const netBits = primary.cidr;
+                const hostBits = 32 - primary.cidr;
+
+                document.getElementById('stat-bits-ratio').textContent = `${netBits}N : ${hostBits}H`;
+                document.getElementById('stat-mode-label').textContent = 'Standar CIDR';
+
+                barNet.style.width = `${(netBits / 32) * 100}%`;
+                barNet.textContent = netBits >= 3 ? `${netBits}` : '';
+
+                barSub.style.width = '0%';
+                barSub.textContent = '';
+
+                barHost.style.width = `${(hostBits / 32) * 100}%`;
+                barHost.textContent = hostBits >= 3 ? `${hostBits}` : '';
+
+                document.getElementById('legend-net-count').textContent = netBits;
+                document.getElementById('legend-host-count').textContent = hostBits;
+                legendSubWrap.classList.add('hidden');
+                legendSubWrap.classList.remove('flex');
+            }
+        }
+
+        function renderMainTable(primary, targetCidr) {
+            const tbody = document.getElementById('main-calc-tbody');
+            
+            const rows = [
+                {
+                    label: 'Address',
+                    sublabel: 'Alamat IP Input',
+                    decimal: primary.ipStr,
+                    copyVal: primary.ipStr,
+                    intVal: primary.ipInt,
+                    highlight: false
+                },
+                {
+                    label: 'Netmask',
+                    sublabel: `Prefix /${primary.cidr}`,
+                    decimal: `${primary.maskStr} = ${primary.cidr}`,
+                    copyVal: primary.maskStr,
+                    intVal: primary.maskInt,
+                    highlight: false
+                },
+                {
+                    label: 'Wildcard',
+                    sublabel: 'Inverse Mask',
+                    decimal: primary.wildcardStr,
+                    copyVal: primary.wildcardStr,
+                    intVal: primary.wildcardInt,
+                    highlight: false
+                },
+                {
+                    label: 'Network',
+                    sublabel: 'Alamat Jaringan',
+                    decimal: `${primary.networkStr}/${primary.cidr}`,
+                    copyVal: `${primary.networkStr}/${primary.cidr}`,
+                    intVal: primary.networkInt,
+                    highlight: true
+                },
+                {
+                    label: 'HostMin',
+                    sublabel: primary.cidr === 31 ? 'Endpoint A (P2P)' : 'Host Pertama',
+                    decimal: primary.hostMinStr,
+                    copyVal: primary.hostMinStr,
+                    intVal: primary.hostMinInt,
+                    highlight: false
+                },
+                {
+                    label: 'HostMax',
+                    sublabel: primary.cidr === 31 ? 'Endpoint B (P2P)' : 'Host Terakhir',
+                    decimal: primary.hostMaxStr,
+                    copyVal: primary.hostMaxStr,
+                    intVal: primary.hostMaxInt,
+                    highlight: false
+                },
+                {
+                    label: 'Broadcast',
+                    sublabel: primary.cidr === 32 ? 'Single Host' : 'Alamat Siaran',
+                    decimal: primary.broadcastStr,
+                    copyVal: primary.broadcastStr,
+                    intVal: primary.broadcastInt,
+                    highlight: false
+                }
+            ];
+
+            tbody.innerHTML = rows.map(row => {
+                const rowBg = row.highlight
+                    ? 'bg-indigo-50/50 dark:bg-indigo-950/20'
+                    : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40';
+                
+                const binHtml = formatColoredBinary(row.intVal, primary.cidr, targetCidr);
+                const hexStr = intToHex(row.intVal);
+                const rawBin = (row.intVal >>> 0).toString(2).padStart(32, '0').match(/.{1,8}/g).join('.');
+
+                return `
+                    <tr class="${rowBg} transition-colors group">
+                        <td class="py-3 px-4 sm:px-5 align-middle">
+                            <div class="font-semibold text-slate-800 dark:text-slate-200">${row.label}</div>
+                            <div class="text-[11px] text-slate-400">${row.sublabel}</div>
+                        </td>
+                        <td class="py-3 px-4 align-middle font-mono font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                            ${row.decimal}
+                        </td>
+                        <td class="py-3 px-4 align-middle whitespace-nowrap">
+                            ${binHtml}
+                        </td>
+                        <td class="py-3 px-4 align-middle font-mono text-xs text-slate-500 dark:text-slate-400 hidden xl:table-cell whitespace-nowrap">
+                            ${hexStr}
+                        </td>
+                        <td class="py-3 px-4 align-middle text-right whitespace-nowrap">
+                            <div class="inline-flex items-center gap-1">
+                                <button type="button" onclick="copyText('${row.copyVal}', '${row.label}')" 
+                                    class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 hover:bg-indigo-500 hover:text-white dark:bg-slate-800 dark:hover:bg-indigo-500 text-slate-600 dark:text-slate-300 transition"
+                                    title="Salin nilai desimal">
+                                    Salin
+                                </button>
+                                <button type="button" onclick="copyText('${rawBin}', 'Biner ${row.label}')" 
+                                    class="px-2 py-1 rounded-lg text-[11px] font-mono font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"
+                                    title="Salin representasi biner">
+                                    01
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // =========================================================================
+        // 4. LOGIKA SUBNETTING & SUPERNETTING ("MOVE TO:")
+        // =========================================================================
+
+        function renderTransitionSection(primary, targetCidr) {
+            const section = document.getElementById('subnetting-section');
+            section.classList.remove('hidden');
+
+            const isSubnetting = targetCidr > primary.cidr;
+            const badge = document.getElementById('transition-badge');
+            const title = document.getElementById('transition-title');
+            const desc = document.getElementById('transition-desc');
+            const targetMaskLabel = document.getElementById('target-mask-label');
+
+            targetMaskLabel.textContent = `/${targetCidr}`;
+
+            // Hitung parameter blok baru berdasarkan IP awal
+            const targetBlock = computeNetworkBlock(primary.ipInt, targetCidr);
+
+            // Render tabel mask target
+            const targetTbody = document.getElementById('target-mask-tbody');
+            const targetRows = [
+                {
+                    label: 'Netmask Baru',
+                    decimal: `${targetBlock.maskStr} = ${targetCidr}`,
+                    intVal: targetBlock.maskInt,
+                    copyVal: targetBlock.maskStr
+                },
+                {
+                    label: 'Wildcard Baru',
+                    decimal: targetBlock.wildcardStr,
+                    intVal: targetBlock.wildcardInt,
+                    copyVal: targetBlock.wildcardStr
+                }
+            ];
+
+            if (!isSubnetting) {
+                // Jika Supernetting, tampilkan langsung Network, HostMin, HostMax, Broadcast hasil agregasi
+                targetRows.push(
+                    {
+                        label: 'Supernet Network',
+                        decimal: `${targetBlock.networkStr}/${targetCidr}`,
+                        intVal: targetBlock.networkInt,
+                        copyVal: `${targetBlock.networkStr}/${targetCidr}`
+                    },
+                    {
+                        label: 'Supernet HostMin',
+                        decimal: targetBlock.hostMinStr,
+                        intVal: targetBlock.hostMinInt,
+                        copyVal: targetBlock.hostMinStr
+                    },
+                    {
+                        label: 'Supernet HostMax',
+                        decimal: targetBlock.hostMaxStr,
+                        intVal: targetBlock.hostMaxInt,
+                        copyVal: targetBlock.hostMaxStr
+                    },
+                    {
+                        label: 'Supernet Broadcast',
+                        decimal: targetBlock.broadcastStr,
+                        intVal: targetBlock.broadcastInt,
+                        copyVal: targetBlock.broadcastStr
+                    }
+                );
+            }
+
+            targetTbody.innerHTML = targetRows.map(r => `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="py-2.5 px-4 sm:px-5 font-semibold text-slate-700 dark:text-slate-300 w-40">${r.label}</td>
+                    <td class="py-2.5 px-4 font-mono font-semibold text-slate-900 dark:text-white whitespace-nowrap">${r.decimal}</td>
+                    <td class="py-2.5 px-4 whitespace-nowrap">${formatColoredBinary(r.intVal, primary.cidr, targetCidr)}</td>
+                    <td class="py-2.5 px-4 text-right">
+                        <button type="button" onclick="copyText('${r.copyVal}', '${r.label}')" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 hover:bg-indigo-500 hover:text-white dark:bg-slate-800 dark:hover:bg-indigo-500 text-slate-600 dark:text-slate-300 transition">
+                            Salin
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            const subnetsListContainer = document.getElementById('subnets-list-container');
+
+            if (isSubnetting) {
+                // SUBNETTING (Memecah jaringan)
+                const bitDiff = targetCidr - primary.cidr;
+                const totalSubnets = Math.pow(2, bitDiff);
+                const hostsPerSubnet = targetBlock.usableHosts;
+
+                badge.textContent = 'Subnetting (VLSM / FLSM)';
+                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30';
+                title.textContent = `Memecah Jaringan /${primary.cidr} → /${targetCidr}`;
+                desc.textContent = `Meminjam ${bitDiff} bit dari porsi host untuk membentuk ${totalSubnets.toLocaleString('id-ID')} sub-jaringan.`;
+
+                document.getElementById('trans-subnet-count').textContent = totalSubnets.toLocaleString('id-ID');
+                document.getElementById('trans-host-per-sub').textContent = hostsPerSubnet.toLocaleString('id-ID');
+
+                subnetsListContainer.classList.remove('hidden');
+                generateSubnetsList(primary.networkInt, targetCidr, totalSubnets);
+            } else {
+                // SUPERNETTING / ROUTE SUMMARIZATION (Menggabungkan jaringan)
+                const bitDiff = primary.cidr - targetCidr;
+                const combinedNetworks = Math.pow(2, bitDiff);
+
+                badge.textContent = 'Supernetting / Agregasi';
+                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30';
+                title.textContent = `Menggabungkan Jaringan /${primary.cidr} → /${targetCidr}`;
+                desc.textContent = `Menggabungkan ${combinedNetworks.toLocaleString('id-ID')} blok jaringan /${primary.cidr} menjadi satu blok supernet /${targetCidr}.`;
+
+                document.getElementById('trans-subnet-count').textContent = `1 (dari ${combinedNetworks.toLocaleString('id-ID')})`;
+                document.getElementById('trans-host-per-sub').textContent = targetBlock.usableHosts.toLocaleString('id-ID');
+
+                subnetsListContainer.classList.add('hidden');
+            }
+        }
+
+        function generateSubnetsList(baseNetworkInt, targetCidr, totalSubnets) {
+            allSubnetsCache = [];
+            const stepSize = Math.pow(2, 32 - targetCidr);
+            const limit = Math.min(totalSubnets, MAX_SUBNETS_GENERATE);
+
+            const limitNote = document.getElementById('subnets-limit-note');
+            if (totalSubnets > MAX_SUBNETS_GENERATE) {
+                limitNote.innerHTML = `Total terbentuk <strong class="text-slate-700 dark:text-slate-200">${totalSubnets.toLocaleString('id-ID')}</strong> subnet. Menampilkan <strong class="text-amber-500">${MAX_SUBNETS_GENERATE.toLocaleString('id-ID')}</strong> subnet pertama untuk menjaga performa browser.`;
+            } else {
+                limitNote.textContent = `Menampilkan seluruh ${totalSubnets.toLocaleString('id-ID')} sub-jaringan yang terbentuk.`;
+            }
+
+            for (let i = 0; i < limit; i++) {
+                const subNetInt = (baseNetworkInt + (i * stepSize)) >>> 0;
+                const block = computeNetworkBlock(subNetInt, targetCidr);
+                allSubnetsCache.push({
+                    index: i + 1,
+                    network: `${block.networkStr}/${targetCidr}`,
+                    hostRange: targetCidr === 32
+                        ? block.networkStr
+                        : `${block.hostMinStr} — ${block.hostMaxStr}`,
+                    broadcast: block.broadcastStr,
+                    rawNetworkIp: block.networkStr,
+                    targetCidr: targetCidr
+                });
+            }
+
+            document.getElementById('subnet-search').value = '';
+            currentPage = 1;
+            renderSubnetPage();
+        }
+
+        function renderSubnetPage() {
+            const query = document.getElementById('subnet-search').value.trim().toLowerCase();
+            if (query === '') {
+                filteredSubnets = allSubnetsCache;
+            } else {
+                filteredSubnets = allSubnetsCache.filter(s =>
+                    s.network.toLowerCase().includes(query) ||
+                    s.hostRange.toLowerCase().includes(query) ||
+                    s.broadcast.toLowerCase().includes(query) ||
+                    `#${s.index}` === query ||
+                    s.index.toString() === query
+                );
+            }
+
+            const totalItems = filteredSubnets.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIdx = (currentPage - 1) * PAGE_SIZE;
+            const endIdx = Math.min(startIdx + PAGE_SIZE, totalItems);
+            const slice = filteredSubnets.slice(startIdx, endIdx);
+
+            const tbody = document.getElementById('subnets-list-tbody');
+            if (slice.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-6 text-center font-sans text-slate-400">
+                            Tidak ditemukan subnet yang cocok dengan pencarian "${query}".
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = slice.map(s => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td class="py-2.5 px-3.5 text-slate-400 font-semibold">${s.index}</td>
+                        <td class="py-2.5 px-3.5 font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">${s.network}</td>
+                        <td class="py-2.5 px-3.5 text-slate-700 dark:text-slate-300 whitespace-nowrap">${s.hostRange}</td>
+                        <td class="py-2.5 px-3.5 text-slate-500 dark:text-slate-400 whitespace-nowrap">${s.broadcast}</td>
+                        <td class="py-2.5 px-3.5 text-right whitespace-nowrap">
+                            <div class="inline-flex items-center gap-1">
+                                <button type="button" onclick="inspectSubnet('${s.rawNetworkIp}', '${s.targetCidr}')" 
+                                    class="px-2 py-1 rounded-md text-[11px] font-sans font-medium bg-indigo-500/10 hover:bg-indigo-500 text-indigo-600 dark:text-indigo-400 hover:text-white transition"
+                                    title="Muat subnet ini ke kalkulator utama">
+                                    Analisis
+                                </button>
+                                <button type="button" onclick="copyText('${s.network}', 'Subnet #${s.index}')" 
+                                    class="px-2 py-1 rounded-md text-[11px] font-sans font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+                                    Salin
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update Info Pagination
+            document.getElementById('page-info').textContent = totalItems === 0
+                ? '0 subnet'
+                : `Menampilkan ${startIdx + 1} – ${endIdx} dari ${totalItems.toLocaleString('id-ID')} subnet`;
+            
+            document.getElementById('btn-prev-page').disabled = currentPage <= 1;
+            document.getElementById('btn-next-page').disabled = currentPage >= totalPages;
+        }
+
+        function changeSubnetPage(delta) {
+            currentPage += delta;
+            renderSubnetPage();
+        }
+
+        // =========================================================================
+        // 5. AKSI INTERAKTIF, CLIPBOARD, PRESET & EXPORT
+        // =========================================================================
+
+        function applyPreset(ip, mask, submask) {
+            document.getElementById('ip-input').value = ip;
+            document.getElementById('mask-input').value = mask;
+            document.getElementById('submask-input').value = submask;
+            calculate();
+        }
+
+        function inspectSubnet(ip, cidr) {
+            document.getElementById('ip-input').value = ip;
+            document.getElementById('mask-input').value = cidr;
+            document.getElementById('submask-input').value = '';
+            calculate();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast(`Memuat jaringan ${ip}/${cidr} ke kalkulator utama`);
+        }
+
+        function showError(msg) {
+            const banner = document.getElementById('error-banner');
+            document.getElementById('error-message').textContent = msg;
+            banner.classList.remove('hidden');
+            document.getElementById('results-wrapper').classList.add('opacity-40', 'pointer-events-none');
+        }
+
+        function hideError() {
+            document.getElementById('error-banner').classList.add('hidden');
+            document.getElementById('results-wrapper').classList.remove('opacity-40', 'pointer-events-none');
+        }
+
+        /**
+         * Menyalin teks ke clipboard menggunakan fallback execCommand agar aman di semua lingkungan iframe.
+         */
+        function copyText(text, label = 'Teks') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast(`Disalin: ${text} (${label})`);
+            } catch (err) {
+                showToast('Gagal menyalin ke clipboard', true);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function copyAllSummary() {
+            if (!currentResult) return;
+            const p = currentResult.primary;
+            const m = currentResult.meta;
+            const lines = [
+                `=== Hasil Kalkulasi IPv4 (NetCalc Pro) ===`,
+                `Address   : ${p.ipStr}`,
+                `Netmask   : ${p.maskStr} (/${p.cidr})`,
+                `Wildcard  : ${p.wildcardStr}`,
+                `Network   : ${p.networkStr}/${p.cidr}`,
+                `HostMin   : ${p.hostMinStr}`,
+                `HostMax   : ${p.hostMaxStr}`,
+                `Broadcast : ${p.broadcastStr}`,
+                `Hosts/Net : ${p.usableHosts.toLocaleString('id-ID')} (${m.ipClass} - ${m.scope})`
+            ];
+            copyText(lines.join('\n'), 'Ringkasan Lengkap');
+        }
+
+        function exportSubnetsCSV() {
+            if (!allSubnetsCache || allSubnetsCache.length === 0) return;
+            const header = 'No,Network Address,Host Range,Broadcast\n';
+            const rows = allSubnetsCache.map(s => `${s.index},"${s.network}","${s.hostRange}","${s.broadcast}"`).join('\n');
+            const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `subnets_${currentResult.primary.networkStr}_to_${currentResult.targetCidr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('File CSV daftar subnet berhasil diunduh!');
+        }
+
+        function updateUrlState(ip, cidr, targetCidr) {
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('ip', ip);
+                url.searchParams.set('mask', cidr);
+                if (targetCidr !== null) {
+                    url.searchParams.set('move', targetCidr);
+                } else {
+                    url.searchParams.delete('move');
+                }
+                window.history.replaceState({}, '', url);
+            } catch (e) {
+                // Abaikan jika dijalankan di lingkungan sandboxed tanpa history API
+            }
+        }
+
+        function copyShareLink() {
+            copyText(window.location.href, 'Tautan Konfigurasi');
+        }
+
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = isError
+                ? 'bg-rose-600 text-white'
+                : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900';
+
+            toast.className = `${bgColor} px-4 py-2.5 rounded-xl shadow-xl text-xs font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-4 opacity-0 border border-slate-700/20 dark:border-slate-200`;
+            toast.innerHTML = `
+                <span class="w-2 h-2 rounded-full ${isError ? 'bg-white' : 'bg-emerald-400 dark:bg-emerald-600'}"></span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // =========================================================================
+        // 6. EVENT LISTENERS REAL-TIME & BOOTSTRAP
+        // =========================================================================
+        ['ip-input', 'mask-input', 'submask-input'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                calculate();
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDropdowns();
+            
+            // Cek apakah ada parameter di URL
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('ip')) document.getElementById('ip-input').value = params.get('ip');
+                if (params.has('mask')) document.getElementById('mask-input').value = params.get('mask');
+                if (params.has('move')) document.getElementById('submask-input').value = params.get('move');
+            } catch (e) {}
+
+            calculate();
+        });
+    </script>
+</body>
+</html>
